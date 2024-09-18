@@ -1,19 +1,18 @@
 {
-  "name": "projeto",
+  "name": "work_pass",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "description": "",
   "dependencies": {
     "@prisma/client": "^5.19.1",
     "bcryptjs": "^2.4.3",
     "express": "^4.21.0",
     "prisma": "^5.19.1"
-  },
-  "description": ""
+  }
 }
