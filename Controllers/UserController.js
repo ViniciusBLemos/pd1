@@ -1,103 +1,79 @@
-const prisma = require('@prisma/client').PrismaClient;
-const bcrypt = require('bcryptjs');
-const prismaClient = new prisma();
+// controllers/userController.js
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
 
-// Criação de novo usuário
-async function createUser(req, res) {
-    const { name, email, password, cpf, role } = req.body;
-
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-    const hashedCPF = await bcrypt.hash(cpf, salt); // Criptografando o CPF
-
+// Criar um novo usuário
+exports.createUser = async (req, res) => {
+    const { name, email, password, cpf, numero, departamento, dataNascimento, role, id_empresa } = req.body;
     try {
-        const newUser = await prismaClient.user.create({
+        const newUser = await prisma.user.create({
             data: {
                 name,
                 email,
-                password: hashedPassword,
-                cpf: hashedCPF,
-                role: role || 'USER', // Nível de acesso padrão: USER
+                password,
+                cpf,
+                numero,
+                departamento,
+                dataNascimento: new Date(dataNascimento),
+                role,
+                id_empresa,
             },
         });
         res.status(201).json(newUser);
     } catch (error) {
-        res.status(400).json({ error: error.message });
+        res.status(500).json({ error: 'Erro ao criar Usuário', details: error.message });
     }
-}
+};
 
-// Listar usuários
-async function getUsers(req, res) {
-    try {
-        const users = await prismaClient.user.findMany();
-        res.json(users);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-}
-
-// Buscar usuário por ID
-async function getUserById(req, res) {
+// Obter um usuário por ID
+exports.getUserById = async (req, res) => {
     const { id } = req.params;
-
     try {
-        const user = await prismaClient.user.findUnique({
+        const user = await prisma.user.findUnique({
             where: { id: parseInt(id) },
+            include: { empresa: true, enderecos: true, logs: true, gaming: true, tasks: true, carreira: true, habilidades: true },
         });
-        if (user) {
-            res.json(user);
-        } else {
-            res.status(404).json({ error: 'Usuário não encontrado' });
-        }
+        if (!user) return res.status(404).json({ error: 'Usuário não encontrado' });
+        res.json(user);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ error: 'Erro ao buscar Usuário', details: error.message });
     }
-}
+};
 
-// Atualizar usuário
-async function updateUser(req, res) {
+// Atualizar um usuário
+exports.updateUser = async (req, res) => {
     const { id } = req.params;
-    const { name, email, password, cpf, role } = req.body;
-
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = password ? await bcrypt.hash(password, salt) : undefined;
-    const hashedCPF = cpf ? await bcrypt.hash(cpf, salt) : undefined;
-
+    const { name, email, password, cpf, numero, departamento, dataNascimento, role, id_empresa } = req.body;
     try {
-        const updatedUser = await prismaClient.user.update({
+        const updatedUser = await prisma.user.update({
             where: { id: parseInt(id) },
             data: {
                 name,
                 email,
-                password: hashedPassword,
-                cpf: hashedCPF,
+                password,
+                cpf,
+                numero,
+                departamento,
+                dataNascimento: new Date(dataNascimento),
                 role,
+                id_empresa,
             },
         });
         res.json(updatedUser);
     } catch (error) {
-        res.status(400).json({ error: error.message });
+        res.status(500).json({ error: 'Erro ao atualizar Usuário', details: error.message });
     }
-}
+};
 
-// Deletar usuário
-async function deleteUser(req, res) {
+// Deletar um usuário
+exports.deleteUser = async (req, res) => {
     const { id } = req.params;
-
     try {
-        await prismaClient.user.delete({
+        await prisma.user.delete({
             where: { id: parseInt(id) },
         });
         res.status(204).send();
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ error: 'Erro ao deletar Usuário', details: error.message });
     }
-}
-
-module.exports = {
-    createUser,
-    getUsers,
-    getUserById,
-    updateUser,
-    deleteUser,
 };
