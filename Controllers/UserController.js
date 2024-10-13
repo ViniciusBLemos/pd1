@@ -1,4 +1,3 @@
-// controllers/userController.js
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
@@ -75,5 +74,14 @@ exports.deleteUser = async (req, res) => {
         res.status(204).send();
     } catch (error) {
         res.status(500).json({ error: 'Erro ao deletar Usuário', details: error.message });
+    }
+};
+
+exports.getAllUsers = async (req, res) => {
+    try {
+        const users = await prisma.user.findMany();
+        res.json(users);
+    } catch (error) {
+        res.status(500).json({ message: 'Erro ao buscar usuários' });
     }
 };
